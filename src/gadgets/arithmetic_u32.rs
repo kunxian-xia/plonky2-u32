@@ -290,11 +290,14 @@ mod tests {
     use plonky2::plonk::config::{GenericConfig, PoseidonGoldilocksConfig};
     use rand::rngs::OsRng;
     use rand::Rng;
+    use log::info;
+    use env_logger::init;
 
     use super::*;
 
     #[test]
     pub fn test_add_many_u32s() -> Result<()> {
+        init();
         const D: usize = 2;
         type C = PoseidonGoldilocksConfig;
         type F = <C as GenericConfig<D>>::F;
@@ -323,6 +326,10 @@ mod tests {
         builder.connect_u32(result_high, expected_high);
 
         let data = builder.build::<C>();
+        for (i, g) in data.common.gates.iter().enumerate() {
+            info!("gate {}: {:?}", i, g);
+        };
+        log::info!("degree: {}", data.common.degree());
         let proof = data.prove(pw).unwrap();
         data.verify(proof)
     }
